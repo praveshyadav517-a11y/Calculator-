@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.netlify.cute_douhua_c577e4.twa",
+      "sha256_cert_fingerprints": [
+        "FE:B0:9F:73:2F:97:36:7B:2F:7F:B8:1D:E2:1C:5E:5F:3E:A7:82:A7:25:88:D3:13:27:61:6E:AF:65:B9:9F:E2"
+      ]
+    }
+  }
+]
