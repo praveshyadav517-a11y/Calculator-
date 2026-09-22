@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculator</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff9500">
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --card-bg: #ffffff;
+    --text: #1c1c1e;
+    --btn-bg: #e5e5ea;
+    --btn-text: #1c1c1e;
+    --op-bg: #ff9500;
+    --op-text: #ffffff;
+    --eq-bg: #34c759;
+    --eq-text: #ffffff;
+    --clear-bg: #ff3b30;
+    --clear-text: #ffffff;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000;
+      --card-bg: #1c1c1e;
+      --text: #ffffff;
+      --btn-bg: #2c2c2e;
+      --btn-text: #ffffff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #000000;
+    --card-bg: #1c1c1e;
+    --text: #ffffff;
+    --btn-bg: #2c2c2e;
+    --btn-text: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 16px;
+  }
+  .calc {
+    width: 100%;
+    max-width: 340px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  .expression {
+    width: 100%;
+    min-height: 24px;
+    text-align: right;
+    font-size: 1.1rem;
+    padding: 0 8px;
+    color: var(--text);
+    opacity: 0.55;
+    word-break: break-all;
+    overflow-x: auto;
+  }
+  .display {
+    width: 100%;
+    min-height: 70px;
+    text-align: right;
+    font-size: 2.4rem;
+    font-weight: 500;
+    padding: 4px 8px 10px;
+    word-break: break-all;
+    overflow-x: auto;
+    color: var(--text);
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 14px;
+    font-size: 1.3rem;
+    padding: 18px 0;
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    cursor: pointer;
+    transition: filter 0.1s ease;
+  }
+  button:active { filter: brightness(0.85); }
+  .op { background: var(--op-bg); color: var(--op-text); }
+  .eq { background: var(--eq-bg); color: var(--eq-text); grid-column: span 2; }
+  .clear { background: var(--clear-bg); color: var(--clear-text); }
+  .zero { grid-column: span 2; }
+</style>
+</head>
+<body>
+<div class="calc">
+  <div class="expression" id="expression">&nbsp;</div>
+  <div class="display" id="display">0</div>
+  <div class="buttons">
+    <button class="clear" onclick="clearAll()">AC</button>
+    <button onclick="toggleSign()">+/-</button>
+    <button onclick="percent()">%</button>
+    <button class="op" onclick="chooseOp('÷')">÷</button>
+
+    <button onclick="inputDigit('7')">7</button>
+    <button onclick="inputDigit('8')">8</button>
+    <button onclick="inputDigit('9')">9</button>
+    <button class="op" onclick="chooseOp('×')">×</button>
+
+    <button onclick="inputDigit('4')">4</button>
+    <button onclick="inputDigit('5')">5</button>
+    <button onclick="inputDigit('6')">6</button>
+    <button class="op" onclick="chooseOp('-')">-</button>
+
+    <button onclick="inputDigit('1')">1</button>
+    <button onclick="inputDigit('2')">2</button>
+    <button onclick="inputDigit('3')">3</button>
+    <button class="op" onclick="chooseOp('+')">+</button>
+
+    <button class="zero" onclick="inputDigit('0')">0</button>
+    <button onclick="inputDot()">.</button>
+    <button class="eq" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+let current = '0';
+let previous = null;
+let operator = null;
+let resetNext = false;
+let lastEquation = null;
+
+const display = document.getElementById('display');
+const exprEl = document.getElementById('expression');
+
+function topLine() {
+  if (lastEquation !== null) return lastEquation;
+  if (operator !== null && previous !== null) return previous + ' ' + operator;
+  return '\u00A0';
+}
+
+function updateDisplay() {
+  display.textContent = current;
+  exprEl.textContent = topLine();
+}
+
+function inputDigit(d) {
+  if (resetNext) {
+    current = d;
+    resetNext = false;
+    if (operator === null) {
+      lastEquation = null;
+    }
+  } else {
+    current = current === '0' ? d : current + d;
+  }
+  updateDisplay();
+}
+
+function inputDot() {
+  if (resetNext) {
+    current = '0.';
+    resetNext = false;
+    if (operator === null) {
+      lastEquation = null;
+    }
+  } else if (!current.includes('.')) {
+    current += '.';
+  }
+  updateDisplay();
+}
+
+function toggleSign() {
+  current = (parseFloat(current) * -1).toString();
+  updateDisplay();
+}
+
+function percent() {
+  current = (parseFloat(current) / 100).toString();
+  updateDisplay();
+}
+
+function clearAll() {
+  current = '0';
+  previous = null;
+  operator = null;
+  resetNext = false;
+  lastEquation = null;
+  updateDisplay();
+}
+
+function chooseOp(op) {
+  if (operator && !resetNext) {
+    calculate();
+  }
+  previous = current;
+  operator = op;
+  resetNext = true;
+  lastEquation = null;
+  updateDisplay();
+}
+
+function calculate() {
+  if (operator === null || previous === null) return;
+  const a = parseFloat(previous);
+  const b = parseFloat(current);
+  let result;
+  switch (operator) {
+    case '+': result = a + b; break;
+    case '-': result = a - b; break;
+    case '×': result = a * b; break;
+    case '÷': result = b === 0 ? 'Error' : a / b; break;
+  }
+  lastEquation = previous + ' ' + operator + ' ' + current + ' =';
+  current = typeof result === 'number' ? parseFloat(result.toFixed(10)).toString() : result;
+  operator = null;
+  previous = null;
+  resetNext = true;
+  updateDisplay();
+}
+</script>
+</body>
+</html>
